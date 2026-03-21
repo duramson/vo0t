@@ -20,10 +20,10 @@ Live Page: **[v.o0t.de](https://v.o0t.de)**
 ## Screenshots
 
 <div align="center">
-<img src="screenshots/main_page.png" width="23%" />
-<img src="screenshots/diagnostics.png" width="23%" />
-<img src="screenshots/settings_page.png" width="23%" />
 <img src="screenshots/connect_page.png" width="23%" />
+<img src="screenshots/main_page.png" width="23%" />
+<img src="screenshots/settings_page.png" width="23%" />
+<img src="screenshots/diagnostics.png" width="23%" />
 </div>
 
 ---
@@ -40,12 +40,15 @@ Live Page: **[v.o0t.de](https://v.o0t.de)**
 ## Features
 
 ### Gauge-Based Temperature Control
+
 No more hammering a plus button. The circular gauge lets you drag directly to any target temperature. Boost and Superboost temperatures are **calculated in real time** and displayed as distinct markers on the arc — you always see all three reference points at a glance without navigating anywhere.
 
 ### Temperature Profiles
+
 Create, name, and instantly activate presets that set temperature and boost together in one tap. Profiles are shown in a grid on the dashboard, so switching between your "Low & Slow" and "Full Flavor" sessions takes one tap and zero scrolling.
 
 ### Diagnostics — Far Beyond the Official App
+
 The official Storz & Bickel app exposes almost nothing. vo0t reads everything the device broadcasts:
 
 - Runtime hours and total session count
@@ -55,9 +58,11 @@ The official Storz & Bickel app exposes almost nothing. vo0t reads everything th
 - All live characteristics over BLE in real time
 
 ### Session Tracking & History
+
 Sessions are automatically recorded in local storage. Each entry logs start time, duration, and the temperatures you ran. Review your usage patterns without any cloud account or telemetry.
 
 ### Full Device Control
+
 Everything the BLE protocol exposes, accessible directly:
 
 - Target temperature, Boost, and Superboost adjustment
@@ -70,6 +75,7 @@ Everything the BLE protocol exposes, accessible directly:
 - Factory restart trigger
 
 ### Privacy First
+
 Fully client-side. Nothing leaves your browser. No accounts, no analytics beyond an anonymous page-view counter, no syncing. All profiles and session history live in your device's local storage.
 
 ---

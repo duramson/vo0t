@@ -193,7 +193,7 @@ export function SettingsPage() {
       <section class="space-y-4 pt-2">
         <div class="bg-surface-container-low space-y-4 rounded-2xl p-4 shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)]">
           <Slider
-            label="Display Brightness"
+            label="LED Brightness"
             displayValue={`${displayLed}%`}
             value={displayLed}
             min={0}
