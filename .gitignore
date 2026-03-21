@@ -19,6 +19,7 @@ yarn-error.log*
 /instructions.md
 /.github/copilot-instructions.md
 /*.md
+!/README.md
 
 # Editor
 .vscode/*
