@@ -29,7 +29,7 @@ function SettingsCardToggle({
       onClick={() => onChange(!enabled)}
       class="bg-surface-container-low flex min-h-27.5 w-full flex-col justify-between rounded-2xl p-4 text-left shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all active:scale-[0.98]"
     >
-      <div class="flex w-full items-start justify-between">
+      <div class="flex w-full items-center justify-between">
         <span
           class={`material-symbols-outlined text-lg ${enabled ? 'text-accent' : 'text-text-secondary/60'}`}
         >
@@ -139,7 +139,7 @@ export function SettingsPage() {
           onClick={() => setIsCelsius(!isCelsius)}
           class="bg-surface-container-low flex min-h-27.5 flex-col justify-between rounded-2xl p-4 text-left shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all active:scale-[0.98]"
         >
-          <div class="flex w-full items-start justify-between">
+          <div class="flex w-full items-center justify-between">
             <span class="material-symbols-outlined text-text-secondary/60 text-lg">thermostat</span>
             <div class="bg-surface-container-high pointer-events-none flex rounded-lg p-0.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)]">
               <div
