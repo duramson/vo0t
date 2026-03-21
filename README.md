@@ -4,13 +4,14 @@
 
 ### Web Bluetooth Controller for Storz & Bickel Vaporizers
 
-[![Live](https://img.shields.io/badge/live-v.o0t.de-brightgreen?style=flat-square)](https://v.o0t.de)
 [![Deploy](https://img.shields.io/github/actions/workflow/status/duramson/vo0t/deploy.yml?style=flat-square&label=deploy)](https://github.com/duramson/vo0t/actions)
 [![License](https://img.shields.io/github/license/duramson/vo0t?style=flat-square)](LICENSE)
 [![Built with Preact](https://img.shields.io/badge/built%20with-Preact-673ab8?style=flat-square)](https://preactjs.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square)](https://tailwindcss.com)
 
 A fast, lightweight PWA that controls your vaporizer directly from the browser — no app store, no accounts, no cloud. Pure Web Bluetooth.
+
+### [v.o0t.de](https://v.o0t.de)
 
 </div>
 
@@ -63,13 +64,13 @@ Web Bluetooth is required. Not all browsers support it.
 
 ## Tech Stack
 
-|          |                                        |
-| -------- | -------------------------------------- |
-| UI       | [Preact](https://preactjs.com) + Hooks |
-| Language | TypeScript (strict)                    |
-| Bundler  | Vite 8                                 |
-| Styling  | Tailwind CSS v4                        |
-| Protocol | Web Bluetooth API                      |
+| Tool | |
+|------|---|
+| UI | [Preact](https://preactjs.com) + Hooks |
+| Language | TypeScript (strict) |
+| Bundler | Vite 8 |
+| Styling | Tailwind CSS v4 |
+| Protocol | Web Bluetooth API |
 
 ---
 
