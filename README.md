@@ -1,65 +1,105 @@
-# vo0t - Web Controller
+<div align="center">
 
-**Live App:** [v.o0t.de](https://v.o0t.de)
+# vo0t
 
-A fast, lightweight, and modern web application to control your vaporizers directly from your browser. Bypassing the need for native app store installations, this Progressive Web App (PWA) relies on the Web Bluetooth API to communicate securely and locally with your device.
+### Web Bluetooth Controller for Storz & Bickel Vaporizers
+
+[![Live](https://img.shields.io/badge/live-v.o0t.de-brightgreen?style=flat-square)](https://v.o0t.de)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/duramson/vo0t/deploy.yml?style=flat-square&label=deploy)](https://github.com/duramson/vo0t/actions)
+[![License](https://img.shields.io/github/license/duramson/vo0t?style=flat-square)](LICENSE)
+[![Built with Preact](https://img.shields.io/badge/built%20with-Preact-673ab8?style=flat-square)](https://preactjs.com)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square)](https://tailwindcss.com)
+
+A fast, lightweight PWA that controls your vaporizer directly from the browser — no app store, no accounts, no cloud. Pure Web Bluetooth.
+
+</div>
+
+---
 
 ## Supported Devices
 
-- **Crafty**
-- **Crafty+**
+| Device  | Status          |
+| ------- | --------------- |
+| Crafty+ | Fully supported |
+| Crafty  | Supported       |
+
+---
 
 ## Features
 
-While covering the standard device settings, this web controller introduces several advanced features to enhance the daily usage of your vaporizer:
+### Temperature Profiles
 
-- **Temperature Profiles:** Create, edit, and quickly toggle between custom temperature and boost presets. No need to dial in the exact temperature every time.
-- **Session Tracking & History:** Automatically track your usage sessions. Monitor your session lengths and temperature curves over time.
-- **Complete Device Control:**
-  - Set target temperature, boost, and superboost.
-  - Toggle heater state.
-  - Adjust LED brightness and Auto-Off timer.
-  - Toggle vibration, charge LED, and permanent Bluetooth visibility.
-  - Trigger factory restarts and read diagnostic data.
-- **Modern UI:** Built with a clean, dark-themed interface, fluid animations, and highly responsive controls.
-- **Privacy First:** Fully client-side. No accounts, no data logging, no cloud syncing. All profiles and session history are stored locally on your device.
+Create, edit, and instantly switch between custom temperature and boost presets. No more dialing in the same settings every session.
 
-## Requirements
+### Session Tracking & History
 
-Since this application relies on the Web Bluetooth API, you need a compatible browser:
+Automatic session recording with duration and temperature data. Review your usage over time directly in the app.
 
-- **Android / Desktop (Windows, macOS, Linux):** Google Chrome, Microsoft Edge, or other Chromium-based browsers.
-- **iOS / iPadOS:** Apple restricts Web Bluetooth in Safari. You must use a specialized browser like WebBLE or Bluefy from the App Store.
+### Complete Device Control
 
-## Technology Stack
+- Target temperature, boost, and superboost
+- Heater on/off toggle
+- LED brightness and Auto-Off timer
+- Vibration, charge LED, and permanent BT visibility
+- Factory restart and diagnostic data readout
 
-This project is built with a strong focus on performance and minimal bundle size:
+### Privacy First
 
-- Preact (with Hooks)
-- TypeScript
-- Vite
-- Tailwind CSS v4
-- Web Bluetooth API
+Fully client-side. No accounts, no telemetry, no syncing. All data lives in your browser's local storage.
+
+---
+
+## Browser Requirements
+
+Web Bluetooth is required. Not all browsers support it.
+
+| Platform                | Supported Browsers                                                   |
+| ----------------------- | -------------------------------------------------------------------- |
+| Android                 | Chrome, Edge, any Chromium-based                                     |
+| Windows / macOS / Linux | Chrome, Edge, any Chromium-based                                     |
+| iOS / iPadOS            | WebBLE or Bluefy (App Store) — Safari does not support Web Bluetooth |
+
+---
+
+## Tech Stack
+
+|          |                                        |
+| -------- | -------------------------------------- |
+| UI       | [Preact](https://preactjs.com) + Hooks |
+| Language | TypeScript (strict)                    |
+| Bundler  | Vite 8                                 |
+| Styling  | Tailwind CSS v4                        |
+| Protocol | Web Bluetooth API                      |
+
+---
 
 ## Local Development
 
-If you want to run this application locally or contribute:
+```sh
+git clone https://github.com/duramson/vo0t.git
+cd vo0t/app
+npm install
+npm run dev
+```
 
-1. Clone the repository
-2. Navigate into the `app` directory: `cd app`
-3. Install dependencies: `npm install`
-4. Start the development server: `npm run dev`
-5. Open the provided `localhost` URL in a supported browser.
+Open the `localhost` URL in a Chromium-based browser. For a production build:
 
-To create a production build, run `npm run build`. The output will be placed in the `app/dist` directory.
+```sh
+npm run build
+# Output: app/dist/
+```
+
+---
 
 ## Acknowledgments
 
-A special thanks to the open-source community for paving the way. Parts of the initial Bluetooth protocol understanding and project inspiration were drawn from:
+Protocol research and initial inspiration drawn from:
 
-- [crafty-control by J-Cat](https://github.com/J-Cat/crafty-control)
-- [reactive-volcano-app by firsttris](https://github.com/firsttris/reactive-volcano-app)
+- [crafty-control](https://github.com/J-Cat/crafty-control) by J-Cat
+- [reactive-volcano-app](https://github.com/firsttris/reactive-volcano-app) by firsttris
+
+---
 
 ## Disclaimer
 
-This project is an independent open-source venture and is not affiliated with, endorsed by, or sponsored by Storz & Bickel GmbH & Co. KG. Use this software at your own risk. The authors are not responsible for any damage caused to your device.
+This project is independent and not affiliated with, endorsed by, or sponsored by Storz & Bickel GmbH & Co. KG. Use at your own risk.
