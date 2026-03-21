@@ -9,10 +9,21 @@
 [![Built with Preact](https://img.shields.io/badge/built%20with-Preact-673ab8?style=flat-square)](https://preactjs.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square)](https://tailwindcss.com)
 
-A fast, lightweight PWA that controls your vaporizer directly from the browser — no app store, no accounts, no cloud. Pure Web Bluetooth.
+A fast, lightweight PWA that controls your Crafty+ directly from the browser — no app store, no accounts, no cloud. Pure Web Bluetooth.
 
-### [v.o0t.de](https://v.o0t.de)
+Live Page: **[v.o0t.de](https://v.o0t.de)**
 
+</div>
+
+---
+
+## Screenshots
+
+<div align="center">
+<img src="screenshots/main_page.png" width="23%" />
+<img src="screenshots/diagnostics.png" width="23%" />
+<img src="screenshots/settings_page.png" width="23%" />
+<img src="screenshots/connect_page.png" width="23%" />
 </div>
 
 ---
@@ -28,31 +39,44 @@ A fast, lightweight PWA that controls your vaporizer directly from the browser �
 
 ## Features
 
-### Temperature Profiles
+### Gauge-Based Temperature Control
+No more hammering a plus button. The circular gauge lets you drag directly to any target temperature. Boost and Superboost temperatures are **calculated in real time** and displayed as distinct markers on the arc — you always see all three reference points at a glance without navigating anywhere.
 
-Create, edit, and instantly switch between custom temperature and boost presets. No more dialing in the same settings every session.
+### Temperature Profiles
+Create, name, and instantly activate presets that set temperature and boost together in one tap. Profiles are shown in a grid on the dashboard, so switching between your "Low & Slow" and "Full Flavor" sessions takes one tap and zero scrolling.
+
+### Diagnostics — Far Beyond the Official App
+The official Storz & Bickel app exposes almost nothing. vo0t reads everything the device broadcasts:
+
+- Runtime hours and total session count
+- Power-on cycles
+- Heater and battery diagnostics
+- Serial number, firmware version, hardware revision
+- All live characteristics over BLE in real time
 
 ### Session Tracking & History
+Sessions are automatically recorded in local storage. Each entry logs start time, duration, and the temperatures you ran. Review your usage patterns without any cloud account or telemetry.
 
-Automatic session recording with duration and temperature data. Review your usage over time directly in the app.
+### Full Device Control
+Everything the BLE protocol exposes, accessible directly:
 
-### Complete Device Control
-
-- Target temperature, boost, and superboost
+- Target temperature, Boost, and Superboost adjustment
 - Heater on/off toggle
-- LED brightness and Auto-Off timer
-- Vibration, charge LED, and permanent BT visibility
-- Factory restart and diagnostic data readout
+- LED brightness
+- Auto-Off timer
+- Vibration on/off
+- Charge indicator LED on/off
+- Permanent Bluetooth visibility toggle
+- Factory restart trigger
 
 ### Privacy First
-
-Fully client-side. No accounts, no telemetry, no syncing. All data lives in your browser's local storage.
+Fully client-side. Nothing leaves your browser. No accounts, no analytics beyond an anonymous page-view counter, no syncing. All profiles and session history live in your device's local storage.
 
 ---
 
 ## Browser Requirements
 
-Web Bluetooth is required. Not all browsers support it.
+Web Bluetooth is required and not supported by all browsers.
 
 | Platform                | Supported Browsers                                                   |
 | ----------------------- | -------------------------------------------------------------------- |
@@ -64,13 +88,13 @@ Web Bluetooth is required. Not all browsers support it.
 
 ## Tech Stack
 
-| Tool | |
-|------|---|
-| UI | [Preact](https://preactjs.com) + Hooks |
-| Language | TypeScript (strict) |
-| Bundler | Vite 8 |
-| Styling | Tailwind CSS v4 |
-| Protocol | Web Bluetooth API |
+| Tool     |                                        |
+| -------- | -------------------------------------- |
+| UI       | [Preact](https://preactjs.com) + Hooks |
+| Language | TypeScript (strict)                    |
+| Bundler  | Vite 8                                 |
+| Styling  | Tailwind CSS v4                        |
+| Protocol | Web Bluetooth API                      |
 
 ---
 
