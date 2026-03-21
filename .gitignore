@@ -1,0 +1,33 @@
+# OS Files
+.DS_Store
+.AppleDouble
+.LSOverride
+.*.swp
+
+# Node / Web
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Reverse Engineering / Research
+/reverse engineering/
+/BLE_REFERENCE.md
+/instructions.md
+/.github/copilot-instructions.md
+/*.md
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

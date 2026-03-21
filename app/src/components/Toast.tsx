@@ -1,0 +1,71 @@
+/**
+ * Lightweight toast notification system.
+ * Usage: import { toast } from './Toast'; toast.error('msg');
+ */
+import { useState, useEffect, useCallback } from 'preact/hooks'
+
+type ToastType = 'error' | 'success' | 'info'
+type ToastItem = { id: number; message: string; type: ToastType }
+
+let nextId = 0
+const listeners = new Set<(items: ToastItem[]) => void>()
+let items: ToastItem[] = []
+
+function notify() {
+  listeners.forEach((fn) => fn([...items]))
+}
+
+function add(message: string, type: ToastType, duration = 4000) {
+  const id = nextId++
+  items = [...items, { id, message, type }]
+  notify()
+  setTimeout(() => {
+    items = items.filter((t) => t.id !== id)
+    notify()
+  }, duration)
+}
+
+export const toast = {
+  error: (msg: string) => add(msg, 'error'),
+  success: (msg: string) => add(msg, 'success'),
+  info: (msg: string) => add(msg, 'info'),
+}
+
+export function ToastContainer() {
+  const [toasts, setToasts] = useState<ToastItem[]>([])
+
+  useEffect(() => {
+    listeners.add(setToasts)
+    return () => {
+      listeners.delete(setToasts)
+    }
+  }, [])
+
+  const dismiss = useCallback((id: number) => {
+    items = items.filter((t) => t.id !== id)
+    notify()
+  }, [])
+
+  if (toasts.length === 0) return null
+
+  return (
+    <div class="pointer-events-none fixed top-4 left-1/2 z-50 flex w-[90vw] max-w-100 -translate-x-1/2 flex-col gap-2">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          class={`fade-in pointer-events-auto flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
+            t.type === 'error'
+              ? 'bg-danger text-white'
+              : t.type === 'success'
+                ? 'bg-success text-white'
+                : 'bg-info text-white'
+          }`}
+          onClick={() => dismiss(t.id)}
+        >
+          <span class="flex-1">{t.message}</span>
+          <span class="cursor-pointer text-xs text-white/60">✕</span>
+        </div>
+      ))}
+    </div>
+  )
+}

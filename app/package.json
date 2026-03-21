@@ -1,0 +1,31 @@
+{
+  "name": "app",
+  "private": true,
+  "version": "1.0.0-beta.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:obfuscated": "tsc -b && vite build && node -e \"const {obfuscate}=require('./node_modules/javascript-obfuscator');const fs=require('fs');const f=fs.readdirSync('dist/assets').find(n=>n.endsWith('.js'));const p='dist/assets/'+f;fs.writeFileSync(p,obfuscate(fs.readFileSync(p,'utf8'),{compact:true,controlFlowFlattening:false,stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,identifierNamesGenerator:'mangled'}).getObfuscatedCode());console.log('Obfuscated: '+p);\"",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "preact": "^10.28.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@preact/preset-vite": "^2.10.3",
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/node": "^24.12.0",
+    "@types/web-bluetooth": "^0.0.21",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "tailwindcss": "^4.2.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.57.1",
+    "vite": "^8.0.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "crafty-root",
+  "private": true,
+  "version": "1.0.0-beta.1",
+  "scripts": {
+    "dev": "npm run dev --prefix app",
+    "build": "npm run build --prefix app",
+    "preview": "npm run preview --prefix app",
+    "lint": "npm run lint --prefix app",
+    "install": "npm install --prefix app"
+  }
+}
