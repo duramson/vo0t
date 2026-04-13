@@ -5,7 +5,7 @@
   --font-headline: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 
   /* Spacing scale — use as: px-(--spacing-page), gap-(--spacing-section), pb-(--spacing-page-bottom) */
-  --spacing-page: 20px;
+  --spacing-page: 16px;
   --spacing-section: 24px;
   --spacing-page-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 16px);
 
