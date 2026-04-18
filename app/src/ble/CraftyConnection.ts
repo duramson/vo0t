@@ -120,21 +120,30 @@ export class CraftyConnection {
   // ── Connection ─────────────────────────────────────────
 
   async connect(): Promise<void> {
-    if (!navigator.bluetooth) throw new Error('Web Bluetooth not supported')
+    if (import.meta.env.VITE_DEV_SIMULATION === 'true') {
+      const { createVirtualDevice } = await import('./simulator')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.device = createVirtualDevice() as any
+    } else {
+      if (!navigator.bluetooth) throw new Error('Web Bluetooth not supported')
 
-    this.device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'Storz' }, { namePrefix: 'STORZ' }, { namePrefix: 'S&B' }],
-      optionalServices: [UUID.SERVICE_1, UUID.SERVICE_2, UUID.SERVICE_3],
-    })
+      this.device = await navigator.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'Storz' }, { namePrefix: 'STORZ' }, { namePrefix: 'S&B' }],
+        optionalServices: [UUID.SERVICE_1, UUID.SERVICE_2, UUID.SERVICE_3],
+      })
+    }
 
-    this.device.addEventListener('gattserverdisconnected', this.onDisconnect)
+    const device = this.device
+    if (!device) throw new Error('Failed to acquire device')
+
+    device.addEventListener('gattserverdisconnected', this.onDisconnect)
     // Ensure we clean up the listener to prevent memory leaks if device object persists
     this.cleanupFunctions.push(() => {
       this.device?.removeEventListener('gattserverdisconnected', this.onDisconnect)
     })
 
-    if (!this.device.gatt) throw new Error('No GATT server found')
-    this.server = await this.device.gatt.connect()
+    if (!device.gatt) throw new Error('No GATT server found')
+    this.server = await device.gatt.connect()
 
     // Discover services
     const [s1, s2, s3] = await Promise.all([

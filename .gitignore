@@ -13,13 +13,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Reverse Engineering / Research
-/reverse engineering/
-/BLE_REFERENCE.md
-/instructions.md
+# Internal (not published)
+/internal/
 /.github/copilot-instructions.md
-/*.md
-!/README.md
 
 # Editor
 .vscode/*

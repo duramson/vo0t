@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:sim": "vite --mode simulation",
     "build": "tsc -b && vite build",
     "build:obfuscated": "tsc -b && vite build && node -e \"const {obfuscate}=require('./node_modules/javascript-obfuscator');const fs=require('fs');const f=fs.readdirSync('dist/assets').find(n=>n.endsWith('.js'));const p='dist/assets/'+f;fs.writeFileSync(p,obfuscate(fs.readFileSync(p,'utf8'),{compact:true,controlFlowFlattening:false,stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,identifierNamesGenerator:'mangled'}).getObfuscatedCode());console.log('Obfuscated: '+p);\"",
     "preview": "vite preview"

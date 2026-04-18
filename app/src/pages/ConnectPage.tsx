@@ -1,12 +1,20 @@
 /** Connect screen – shown when device is not connected */
 import { useCrafty } from '../hooks/useCrafty'
 
+const IS_SIM = import.meta.env.VITE_DEV_SIMULATION === 'true'
+
 export function ConnectPage() {
   const { connect, connecting, error } = useCrafty()
 
   return (
     <div class="flex flex-1 items-center justify-center p-6">
       <div class="fade-in w-full max-w-sm text-center">
+        {IS_SIM && (
+          <div class="bg-accent/10 border-accent/30 text-accent mb-6 flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold tracking-widest uppercase">
+            <span class="material-symbols-outlined text-[14px]">science</span>
+            Simulator Mode — no device needed
+          </div>
+        )}
         {/* Connection Status Section */}
         <section class="mb-12">
           <div class="relative mb-8 inline-block">

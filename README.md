@@ -20,10 +20,10 @@ Live Page: **[v.o0t.de](https://v.o0t.de)**
 ## Screenshots
 
 <div align="center">
-<img src="screenshots/connect_page.png" width="23%" />
-<img src="screenshots/main_page.png" width="23%" />
-<img src="screenshots/settings_page.png" width="23%" />
-<img src="screenshots/diagnostics.png" width="23%" />
+<img src="docs/images/connect_page.png" width="23%" />
+<img src="docs/images/main_page.png" width="23%" />
+<img src="docs/images/settings_page.png" width="23%" />
+<img src="docs/images/diagnostics.png" width="23%" />
 </div>
 
 ---
@@ -112,6 +112,13 @@ cd vo0t/app
 npm install
 npm run dev
 ```
+
+> **No hardware?** Run `npm run dev:sim` to start with a virtual Crafty+ device — no BLE required.
+> The simulator heats up, drains battery, and responds to all controls just like the real thing.
+> The connect screen shows a **Simulator Mode** badge so you always know which mode you're in.
+> Click **Pair new device** as usual — the app connects instantly without a BLE picker.
+> A floating **SIM** button (bottom right) opens the dev panel: override temperature, battery level, toggle the heater, or force a disconnect.
+> Simulator code is completely excluded from production builds.
 
 Open the `localhost` URL in a Chromium-based browser. For a production build:
 

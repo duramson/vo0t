@@ -10,6 +10,13 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { ToastContainer } from './components/Toast'
 import { useSessionTracker } from './hooks/useSessionTracker'
 
+// Dynamic import — only loaded when VITE_DEV_SIMULATION is true.
+// Vite replaces the env check at build time → dead code elimination removes this entirely in production.
+const SimulatorPanel =
+  import.meta.env.VITE_DEV_SIMULATION === 'true'
+    ? (await import('./components/SimulatorPanel')).SimulatorPanel
+    : null
+
 function AppContent() {
   const { state } = useCrafty()
   const [tab, setTab] = useState<TabId>('dashboard')
@@ -42,6 +49,7 @@ export function App() {
           </div>
         </div>
         <ToastContainer />
+        {SimulatorPanel && <SimulatorPanel />}
       </CraftyProvider>
     </ErrorBoundary>
   )
