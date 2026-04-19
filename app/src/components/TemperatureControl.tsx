@@ -451,6 +451,16 @@ export const TemperatureControl = memo(function TemperatureControl({
       />
 
       {/* Outer ring: draggable handle */}
+      {isHeating && (
+        <circle
+          cx={handle.x}
+          cy={handle.y}
+          r={14}
+          fill="var(--color-accent)"
+          opacity="0.4"
+          class="animate-pulse"
+        />
+      )}
       <circle
         cx={handle.x}
         cy={handle.y}
@@ -458,7 +468,6 @@ export const TemperatureControl = memo(function TemperatureControl({
         fill="var(--color-accent)"
         stroke="var(--color-bg)"
         stroke-width="3"
-        class={isHeating ? 'animate-pulse' : ''}
         style={{ filter: 'drop-shadow(0 0 6px rgba(255, 87, 34, 0.4))' }}
       />
 
