@@ -129,7 +129,7 @@ npm run build
 
 ---
 
-## Acknowledgments
+## Acknowledgments<
 
 Protocol research and initial inspiration drawn from:
 

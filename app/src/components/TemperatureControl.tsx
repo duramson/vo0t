@@ -375,8 +375,6 @@ export const TemperatureControl = memo(function TemperatureControl({
   return (
     <svg
       ref={svgRef}
-      width="100%"
-      height="auto"
       viewBox={`0 0 ${size} ${svgH}`}
       overflow="visible"
       class="w-full cursor-pointer touch-none select-none"
