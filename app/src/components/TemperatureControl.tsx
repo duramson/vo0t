@@ -288,16 +288,11 @@ export const TemperatureControl = memo(function TemperatureControl({
   const isBoosting = boostActive || superBoostActive
   const isHeating = heaterActive && current < effectiveTarget - 2
 
-  const progress = useMemo(() => {
-    if (target <= 0) return 0
-    return Math.min(Math.max(current / target, 0), 1)
-  }, [current, target])
-
-  // Inner ring: map current temp on same scale as outer ring, clamped to effective target
+  // Inner ring: map actual current temp on the full gauge scale
   const progressAngle = useMemo(() => {
-    const clamped = Math.max(min, Math.min(current, effectiveTarget))
+    const clamped = Math.max(min, Math.min(current, max))
     return valToAngle(clamped, min, max)
-  }, [current, effectiveTarget, min, max])
+  }, [current, min, max])
 
   const progressColor = useMemo(() => {
     if (effectiveTarget > 0 && current >= effectiveTarget) return 'var(--color-success)'
@@ -479,7 +474,7 @@ export const TemperatureControl = memo(function TemperatureControl({
         opacity="0.5"
       />
       {/* Inner ring: progress (current/target) */}
-      {progress > 0.005 && (
+      {current > min && (
         <path
           d={arc(ARC_START, progressAngle, innerR, cx, cy)}
           fill="none"
