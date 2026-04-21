@@ -365,7 +365,8 @@ export const TemperatureControl = memo(function TemperatureControl({
 
   // ── Handle position ────────────────────────────────────
 
-  const handle = ptOnArc(targetAngle, outerR, cx, cy)
+  const handleAngle = valToAngle(Math.max(min, Math.min(effectiveTarget, max)), min, max)
+  const handle = ptOnArc(handleAngle, outerR, cx, cy)
 
   return (
     <svg
