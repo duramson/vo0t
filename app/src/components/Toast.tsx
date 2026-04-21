@@ -11,19 +11,33 @@ let nextId = 0
 const MAX_TOASTS = 5
 const listeners = new Set<(items: ToastItem[]) => void>()
 let items: ToastItem[] = []
+const timers = new Map<number, ReturnType<typeof setTimeout>>()
 
 function notify() {
   listeners.forEach((fn) => fn([...items]))
 }
 
 function add(message: string, type: ToastType, duration = 4000) {
+  if (items.length >= MAX_TOASTS) {
+    const oldest = items[0]
+    if (oldest) {
+      const timeoutId = timers.get(oldest.id)
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+        timers.delete(oldest.id)
+      }
+    }
+  }
+
   const id = nextId++
   items = [...items, { id, message, type }].slice(-MAX_TOASTS)
   notify()
-  setTimeout(() => {
+  const timeoutId = setTimeout(() => {
+    timers.delete(id)
     items = items.filter((t) => t.id !== id)
     notify()
   }, duration)
+  timers.set(id, timeoutId)
 }
 
 export const toast = {
@@ -43,6 +57,11 @@ export function ToastContainer() {
   }, [])
 
   const dismiss = useCallback((id: number) => {
+    const timeoutId = timers.get(id)
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      timers.delete(id)
+    }
     items = items.filter((t) => t.id !== id)
     notify()
   }, [])
