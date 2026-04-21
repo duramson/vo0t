@@ -18,22 +18,21 @@ function notify() {
 }
 
 function add(message: string, type: ToastType, duration = 4000) {
-  if (items.length >= MAX_TOASTS) {
-    const oldest = items[0]
-    if (oldest) {
-      const timeoutId = timers.get(oldest.id)
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-        timers.delete(oldest.id)
-      }
-    }
-  }
-
   const id = nextId++
-  items = [...items, { id, message, type }].slice(-MAX_TOASTS)
+  const nextItems = [...items, { id, message, type }]
+  const evicted = nextItems.length > MAX_TOASTS ? nextItems[0] : undefined
+  items = nextItems.slice(-MAX_TOASTS)
+  if (evicted) {
+    const timeoutId = timers.get(evicted.id)
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+    timers.delete(evicted.id)
+  }
   notify()
   const timeoutId = setTimeout(() => {
     timers.delete(id)
+    if (!items.some((t) => t.id === id)) return
     items = items.filter((t) => t.id !== id)
     notify()
   }, duration)
@@ -57,11 +56,12 @@ export function ToastContainer() {
   }, [])
 
   const dismiss = useCallback((id: number) => {
+    if (!items.some((t) => t.id === id)) return
     const timeoutId = timers.get(id)
     if (timeoutId) {
       clearTimeout(timeoutId)
-      timers.delete(id)
     }
+    timers.delete(id)
     items = items.filter((t) => t.id !== id)
     notify()
   }, [])
