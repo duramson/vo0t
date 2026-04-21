@@ -74,21 +74,7 @@ function ptOnArc(angle: number, r: number, cx: number, cy: number) {
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
 }
 
-function getClientPos(
-  e: MouseEvent | TouchEvent | Event,
-): { clientX: number; clientY: number } | null {
-  if ('touches' in e) {
-    const touchE = e as TouchEvent
-    if (touchE.touches.length > 0) {
-      const touch = touchE.touches[0]
-      if (!touch) return { clientX: 0, clientY: 0 }
-      return { clientX: touch.clientX, clientY: touch.clientY }
-    }
-    return null
-  }
-  const mouseE = e as MouseEvent
-  return { clientX: mouseE.clientX, clientY: mouseE.clientY }
-}
+const getClientPos = (e: MouseEvent | TouchEvent) => ('touches' in e ? e.touches[0] : e)
 
 function BoostMarker({
   temp,
@@ -331,7 +317,7 @@ export const TemperatureControl = memo(function TemperatureControl({
   )
 
   const onStart = useCallback(
-    (e: MouseEvent | TouchEvent | Event) => {
+    (e: MouseEvent | TouchEvent) => {
       e.preventDefault()
       const pos = getClientPos(e)
       if (!pos) return
@@ -344,7 +330,7 @@ export const TemperatureControl = memo(function TemperatureControl({
   )
 
   const onMove = useCallback(
-    (e: MouseEvent | TouchEvent | Event) => {
+    (e: MouseEvent | TouchEvent) => {
       if (!dragging.current) return
       e.preventDefault()
       const pos = getClientPos(e)
