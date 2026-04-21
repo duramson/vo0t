@@ -31,9 +31,12 @@ function add(message: string, type: ToastType, duration = 4000) {
   }
   notify()
   const timeoutId = setTimeout(() => {
-    timers.delete(id)
-    if (!items.some((t) => t.id === id)) return
+    if (!items.some((t) => t.id === id)) {
+      timers.delete(id)
+      return
+    }
     items = items.filter((t) => t.id !== id)
+    timers.delete(id)
     notify()
   }, duration)
   timers.set(id, timeoutId)
@@ -56,7 +59,6 @@ export function ToastContainer() {
   }, [])
 
   const dismiss = useCallback((id: number) => {
-    if (!items.some((t) => t.id === id)) return
     const timeoutId = timers.get(id)
     if (timeoutId) {
       clearTimeout(timeoutId)
