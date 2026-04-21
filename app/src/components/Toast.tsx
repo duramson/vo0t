@@ -8,6 +8,7 @@ type ToastType = 'error' | 'success' | 'info'
 type ToastItem = { id: number; message: string; type: ToastType }
 
 let nextId = 0
+const MAX_TOASTS = 5
 const listeners = new Set<(items: ToastItem[]) => void>()
 let items: ToastItem[] = []
 
@@ -17,7 +18,7 @@ function notify() {
 
 function add(message: string, type: ToastType, duration = 4000) {
   const id = nextId++
-  items = [...items, { id, message, type }]
+  items = [...items, { id, message, type }].slice(-MAX_TOASTS)
   notify()
   setTimeout(() => {
     items = items.filter((t) => t.id !== id)
