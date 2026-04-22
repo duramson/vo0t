@@ -1,60 +1,53 @@
-import { useState, useEffect } from 'preact/hooks'
+import { create } from 'zustand'
+import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware'
 
-const STORAGE_KEY = 'crafty-temp-scale'
-
-let isCelsiusVal = localStorage.getItem(STORAGE_KEY) !== 'F'
-const listeners = new Set<() => void>()
-
-function notify() {
-  for (const l of listeners) l()
+interface SettingsState {
+  isCelsius: boolean
+  setIsCelsius: (v: boolean) => void
 }
 
-export function setIsCelsius(value: boolean) {
-  isCelsiusVal = value
-  localStorage.setItem(STORAGE_KEY, value ? 'C' : 'F')
-  notify()
+// Storage adapter that understands both the old raw-string format ("C"/"F")
+// and the Zustand persist JSON format. Enables zero-downtime upgrade for
+// existing users without losing their temperature-scale preference.
+const legacyCompatStorage: StateStorage = {
+  getItem: (name) => {
+    const raw = localStorage.getItem(name)
+    if (raw === 'C' || raw === 'F') {
+      return JSON.stringify({ state: { isCelsius: raw === 'C' }, version: 0 })
+    }
+    return raw
+  },
+  setItem: (name, value) => localStorage.setItem(name, value),
+  removeItem: (name) => localStorage.removeItem(name),
 }
 
-export function getIsCelsius() {
-  return isCelsiusVal
-}
-
-// Convert C to F
-export function cToApp(celsius: number): number {
-  if (isCelsiusVal) return celsius
-  return Math.round((celsius * 9) / 5 + 32)
-}
-
-// Convert App (C or F) to C
-export function appToC(appTemp: number): number {
-  if (isCelsiusVal) return appTemp
-  return Math.round(((appTemp - 32) * 5) / 9)
-}
-
-export function formatTemp(celsius: number): string {
-  const val = cToApp(celsius)
-  return `${val}°${isCelsiusVal ? 'C' : 'F'}`
-}
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      isCelsius: true,
+      setIsCelsius: (v) => set({ isCelsius: v }),
+    }),
+    {
+      name: 'crafty-temp-scale',
+      storage: createJSONStorage(() => legacyCompatStorage),
+    },
+  ),
+)
 
 export function useSettings() {
-  const [isCelsius, setIsC] = useState(() => getIsCelsius())
+  const isCelsius = useSettingsStore((s) => s.isCelsius)
+  const setIsCelsius = useSettingsStore((s) => s.setIsCelsius)
 
-  useEffect(() => {
-    const handler = () => setIsC(getIsCelsius())
-    listeners.add(handler)
-    return () => {
-      listeners.delete(handler)
-    }
-  }, [])
+  const cToApp = (c: number) => (isCelsius ? c : Math.round((c * 9) / 5 + 32))
+  const appToC = (v: number) => (isCelsius ? v : Math.round(((v - 32) * 5) / 9))
+  const formatTemp = (c: number) => `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
 
   return {
     isCelsius,
     setIsCelsius,
     cToApp,
     appToC,
-    formatTemp(c: number) {
-      return `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
-    },
+    formatTemp,
     unit: isCelsius ? '°C' : '°F',
   }
 }
