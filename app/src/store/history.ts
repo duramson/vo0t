@@ -3,6 +3,12 @@ import { db, type SessionRecord } from './db'
 
 export type { SessionRecord } from './db'
 
+// Cap the live query result so a long-running install (years of daily use)
+// can't slow down HistoryPage rendering. Older sessions stay in IndexedDB
+// and remain accessible via direct queries — only the default list view
+// is bounded.
+const HISTORY_DISPLAY_LIMIT = 200
+
 export async function addSession(
   session: Omit<SessionRecord, 'id' | 'date'>,
   readings: Array<{ t: number; temp: number }> = [],
@@ -33,7 +39,7 @@ export async function clearHistory(): Promise<void> {
 
 export function useHistory() {
   const history = useLiveQuery(
-    () => db.sessions.orderBy('date').reverse().limit(200).toArray(),
+    () => db.sessions.orderBy('date').reverse().limit(HISTORY_DISPLAY_LIMIT).toArray(),
     [],
     [] as SessionRecord[],
   )

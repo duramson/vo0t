@@ -1,3 +1,4 @@
+import { useMemo } from 'preact/hooks'
 import { create } from 'zustand'
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware'
 
@@ -38,16 +39,20 @@ export function useSettings() {
   const isCelsius = useSettingsStore((s) => s.isCelsius)
   const setIsCelsius = useSettingsStore((s) => s.setIsCelsius)
 
-  const cToApp = (c: number) => (isCelsius ? c : Math.round((c * 9) / 5 + 32))
-  const appToC = (v: number) => (isCelsius ? v : Math.round(((v - 32) * 5) / 9))
-  const formatTemp = (c: number) => `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
-
-  return {
-    isCelsius,
-    setIsCelsius,
-    cToApp,
-    appToC,
-    formatTemp,
-    unit: isCelsius ? '°C' : '°F',
-  }
+  // Memoize the returned helpers so consumers using them in deps arrays or
+  // passing them down as props don't see fresh function references on every
+  // unrelated render.
+  return useMemo(() => {
+    const cToApp = (c: number) => (isCelsius ? c : Math.round((c * 9) / 5 + 32))
+    const appToC = (v: number) => (isCelsius ? v : Math.round(((v - 32) * 5) / 9))
+    const formatTemp = (c: number) => `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
+    return {
+      isCelsius,
+      setIsCelsius,
+      cToApp,
+      appToC,
+      formatTemp,
+      unit: isCelsius ? '°C' : '°F',
+    }
+  }, [isCelsius, setIsCelsius])
 }
