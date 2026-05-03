@@ -34,8 +34,12 @@ const legacyCompatStorage: StateStorage = {
       if (Array.isArray(parsed)) {
         return JSON.stringify({ state: { profiles: parsed }, version: 0 })
       }
-    } catch {
-      return null
+    } catch (e) {
+      // Don't return null here: that would silently wipe the user's profiles
+      // on the first load after a corrupt-but-non-empty value. Pass the raw
+      // string through so the persist middleware logs the parse failure and
+      // keeps the in-memory defaults instead of overwriting storage.
+      console.error(`[profiles] failed to parse '${name}' from localStorage`, e)
     }
     return raw
   },
