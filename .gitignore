@@ -28,3 +28,11 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# GitNexus (local code-graph index + auto-generated agent context files)
+.gitnexus
+AGENTS.md
+CLAUDE.md
+
+# Claude Code (per-machine settings, skills, and worktrees)
+.claude/

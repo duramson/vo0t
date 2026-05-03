@@ -1,70 +1,47 @@
-import { useEffect, useState } from 'preact/hooks'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db, type SessionRecord } from './db'
 
-export interface SessionRecord {
-  id: string
-  date: string
-  durationSeconds: number
-  maxTemp: number
-  profileName?: string
-}
+export type { SessionRecord } from './db'
 
-const STORAGE_KEY = 'crafty_history'
+// Cap the live query result so a long-running install (years of daily use)
+// can't slow down HistoryPage rendering. Older sessions stay in IndexedDB
+// and remain accessible via direct queries — only the default list view
+// is bounded.
+const HISTORY_DISPLAY_LIMIT = 200
 
-let memoryCache: SessionRecord[] | null = null
-
-function loadHistory(): SessionRecord[] {
-  if (memoryCache) return memoryCache
+export async function addSession(
+  session: Omit<SessionRecord, 'id' | 'date'>,
+  readings: Array<{ t: number; temp: number }> = [],
+): Promise<void> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      memoryCache = JSON.parse(raw)
-      return memoryCache ?? []
+    const sessionId = (await db.sessions.add({
+      ...session,
+      date: new Date().toISOString(),
+    })) as number
+    if (readings.length > 0) {
+      await db.tempReadings.bulkAdd(readings.map((r) => ({ ...r, sessionId })))
     }
   } catch (e) {
-    console.error('Failed to load history', e)
+    console.error('Failed to save session', e)
   }
-  memoryCache = []
-  return memoryCache
 }
 
-function saveHistory(history: SessionRecord[]) {
-  memoryCache = history
+export async function clearHistory(): Promise<void> {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
+    await db.transaction('rw', db.sessions, db.tempReadings, async () => {
+      await db.tempReadings.clear()
+      await db.sessions.clear()
+    })
   } catch (e) {
-    console.error('Failed to save history', e)
+    console.error('Failed to clear history', e)
   }
-}
-
-export function addSession(session: Omit<SessionRecord, 'id' | 'date'>) {
-  const history = loadHistory()
-  const newRecord: SessionRecord = {
-    ...session,
-    id: crypto.randomUUID(),
-    date: new Date().toISOString(),
-  }
-  // Keep only the last 100 sessions to save space
-  history.unshift(newRecord)
-  if (history.length > 100) history.length = 100
-  saveHistory(history)
-
-  // Dispatch custom event for cross-component reactivity
-  window.dispatchEvent(new Event('crafty_history_updated'))
-}
-
-export function clearHistory() {
-  saveHistory([])
-  window.dispatchEvent(new Event('crafty_history_updated'))
 }
 
 export function useHistory() {
-  const [history, setHistory] = useState<SessionRecord[]>(() => loadHistory())
-
-  useEffect(() => {
-    const handler = () => setHistory(loadHistory())
-    window.addEventListener('crafty_history_updated', handler)
-    return () => window.removeEventListener('crafty_history_updated', handler)
-  }, [])
-
+  const history = useLiveQuery(
+    () => db.sessions.orderBy('date').reverse().limit(HISTORY_DISPLAY_LIMIT).toArray(),
+    [],
+    [] as SessionRecord[],
+  )
   return { history, clearHistory }
 }
