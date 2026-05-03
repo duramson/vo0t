@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'preact/hooks'
 import { useCrafty } from './useCrafty'
 import { addSession } from '../store/history'
-import { useActiveSessionStore } from '../store/activeSession'
+import { getActiveSessionReadings, useActiveSessionStore } from '../store/activeSession'
 
 const DEBUG = import.meta.env.DEV
 
@@ -14,22 +14,25 @@ export function useSessionTracker() {
   useEffect(() => {
     const store = useActiveSessionStore.getState()
 
-    // Session started (no active session and heater just came on)
-    if (heaterActive && store.startTimestamp === null) {
+    // In-progress tracking — also where we cancel a pending end-of-session
+    // debounce. The cancellation has to live here (not in the "session
+    // started" branch below) because during the 1.5 s debounce window
+    // startTimestamp is still set, so a heater flicker (off → on) lands here,
+    // not in the start branch.
+    if (heaterActive && store.startTimestamp !== null) {
       if (offDebounce.current) {
         if (DEBUG) console.log('[Session] heater flicker — cancelling session end')
         clearTimeout(offDebounce.current)
         offDebounce.current = null
-        return
       }
-      if (DEBUG) console.log('[Session] start — setTemp=%d autoOff=%d', setTemp, autoOffSeconds)
-      store.begin(currentTemp, autoOffSeconds)
+      store.recordTemp(currentTemp)
       return
     }
 
-    // In-progress tracking
-    if (heaterActive && store.startTimestamp !== null) {
-      store.recordTemp(currentTemp)
+    // Session started (no active session and heater just came on)
+    if (heaterActive && store.startTimestamp === null) {
+      if (DEBUG) console.log('[Session] start — setTemp=%d autoOff=%d', setTemp, autoOffSeconds)
+      store.begin(currentTemp, autoOffSeconds)
       return
     }
 
@@ -39,7 +42,6 @@ export function useSessionTracker() {
       const startTime = store.startTimestamp
       const baseOff = store.baseOffSeconds
       const maxTempAtEnd = store.maxTemp
-      const readingsAtEnd = store.readings
 
       offDebounce.current = setTimeout(() => {
         offDebounce.current = null
@@ -55,12 +57,14 @@ export function useSessionTracker() {
           )
 
         if (durationSeconds >= threshold) {
+          // Snapshot readings at the moment of confirmed end, not at debounce
+          // start, so any samples that landed during the 1.5 s window are kept.
           addSession(
             {
               durationSeconds,
               maxTemp: Math.max(maxTempAtEnd, setTemp),
             },
-            readingsAtEnd,
+            getActiveSessionReadings().slice(),
           )
           if (DEBUG) console.log('[Session] saved')
         } else {
