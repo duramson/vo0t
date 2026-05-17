@@ -405,20 +405,23 @@ export class CraftyConnection {
   // ── Writes ─────────────────────────────────────────────
 
   private async writeU16(uuid: string, value: number): Promise<void> {
+    if (!this.server?.connected) throw new Error('GATT server not connected')
     const c = this.chars.get(uuid)
     if (!c) throw new Error(`Characteristic ${uuid} not available`)
     await bleQueue.enqueue(() => c.writeValue(toUint16LE(value)))
   }
 
   async setTemperature(celsius: number): Promise<void> {
-    const clamped = Math.max(UUID.TEMP_MIN, Math.min(UUID.TEMP_MAX, celsius))
+    const maxAllowed = UUID.TEMP_MAX - this.state.boostTemp
+    const clamped = Math.max(UUID.TEMP_MIN, Math.min(maxAllowed, celsius))
     await this.writeU16(UUID.SET_TEMPERATURE, tempToRaw(clamped))
     this.state.setTemp = clamped
     this.notify()
   }
 
   async setBoostTemperature(celsius: number): Promise<void> {
-    const clamped = Math.max(UUID.BOOST_MIN, Math.min(UUID.BOOST_MAX, celsius))
+    const maxAllowed = Math.min(UUID.BOOST_MAX, UUID.TEMP_MAX - this.state.setTemp)
+    const clamped = Math.max(UUID.BOOST_MIN, Math.min(maxAllowed, celsius))
     await this.writeU16(UUID.BOOST_TEMPERATURE, tempToRaw(clamped))
     this.state.boostTemp = clamped
     this.notify()

@@ -1,60 +1,63 @@
-import { useState, useEffect } from 'preact/hooks'
+import { useMemo } from 'preact/hooks'
+import { create } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
+import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware'
+import { celsiusToFahrenheit, fahrenheitToCelsius } from '../ble/encoding'
 
-const STORAGE_KEY = 'crafty-temp-scale'
-
-let isCelsiusVal = localStorage.getItem(STORAGE_KEY) !== 'F'
-const listeners = new Set<() => void>()
-
-function notify() {
-  for (const l of listeners) l()
+interface SettingsState {
+  isCelsius: boolean
+  setIsCelsius: (v: boolean) => void
 }
 
-export function setIsCelsius(value: boolean) {
-  isCelsiusVal = value
-  localStorage.setItem(STORAGE_KEY, value ? 'C' : 'F')
-  notify()
+// Storage adapter that understands both the old raw-string format ("C"/"F")
+// and the Zustand persist JSON format. Enables zero-downtime upgrade for
+// existing users without losing their temperature-scale preference.
+const legacyCompatStorage: StateStorage = {
+  getItem: (name) => {
+    const raw = localStorage.getItem(name)
+    if (raw === 'C' || raw === 'F') {
+      return JSON.stringify({ state: { isCelsius: raw === 'C' }, version: 0 })
+    }
+    return raw
+  },
+  setItem: (name, value) => localStorage.setItem(name, value),
+  removeItem: (name) => localStorage.removeItem(name),
 }
 
-export function getIsCelsius() {
-  return isCelsiusVal
-}
-
-// Convert C to F
-export function cToApp(celsius: number): number {
-  if (isCelsiusVal) return celsius
-  return Math.round((celsius * 9) / 5 + 32)
-}
-
-// Convert App (C or F) to C
-export function appToC(appTemp: number): number {
-  if (isCelsiusVal) return appTemp
-  return Math.round(((appTemp - 32) * 5) / 9)
-}
-
-export function formatTemp(celsius: number): string {
-  const val = cToApp(celsius)
-  return `${val}°${isCelsiusVal ? 'C' : 'F'}`
-}
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      isCelsius: true,
+      setIsCelsius: (v) => set({ isCelsius: v }),
+    }),
+    {
+      name: 'crafty-temp-scale',
+      storage: createJSONStorage(() => legacyCompatStorage),
+    },
+  ),
+)
 
 export function useSettings() {
-  const [isCelsius, setIsC] = useState(() => getIsCelsius())
+  // One subscription with shallow equality instead of two independent
+  // selectors — every consumer (8 direct callers) halves its store hookup.
+  const { isCelsius, setIsCelsius } = useSettingsStore(
+    useShallow((s) => ({ isCelsius: s.isCelsius, setIsCelsius: s.setIsCelsius })),
+  )
 
-  useEffect(() => {
-    const handler = () => setIsC(getIsCelsius())
-    listeners.add(handler)
-    return () => {
-      listeners.delete(handler)
+  // Memoize the returned helpers so consumers using them in deps arrays or
+  // passing them down as props don't see fresh function references on every
+  // unrelated render.
+  return useMemo(() => {
+    const cToApp = (c: number) => (isCelsius ? c : celsiusToFahrenheit(c))
+    const appToC = (v: number) => (isCelsius ? v : fahrenheitToCelsius(v))
+    const formatTemp = (c: number) => `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
+    return {
+      isCelsius,
+      setIsCelsius,
+      cToApp,
+      appToC,
+      formatTemp,
+      unit: isCelsius ? '°C' : '°F',
     }
-  }, [])
-
-  return {
-    isCelsius,
-    setIsCelsius,
-    cToApp,
-    appToC,
-    formatTemp(c: number) {
-      return `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
-    },
-    unit: isCelsius ? '°C' : '°F',
-  }
+  }, [isCelsius, setIsCelsius])
 }
