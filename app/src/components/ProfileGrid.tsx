@@ -2,8 +2,7 @@ import { useState, useCallback } from 'preact/hooks'
 import { memo } from 'preact/compat'
 import { useCrafty } from '../hooks/useCrafty'
 import { useSettings } from '../store/settings'
-import { type Profile } from '../store/profiles'
-import { useProfileManagement } from '../hooks/useProfileManagement'
+import { useProfileStore, type Profile } from '../store/profiles'
 import { ProfileEditCard } from './ProfileEditCard'
 
 interface ProfileGridProps {
@@ -176,33 +175,37 @@ const ExpandedCard = memo(function ExpandedCard({
 
 export function ProfileGrid({ activeProfileId, onActivate, onDeactivate }: ProfileGridProps) {
   const { state } = useCrafty()
-  const { profiles, handleAddProfile, handleDeleteProfile, handleUpdateProfile } =
-    useProfileManagement()
+  const profiles = useProfileStore((s) => s.profiles)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
 
   const handleAdd = useCallback(() => {
-    const p = handleAddProfile(state.setTemp, state.boostTemp)
+    const { addProfile, profiles } = useProfileStore.getState()
+    const p = addProfile({
+      name: `Profile ${profiles.length + 1}`,
+      setTemp: state.setTemp,
+      boostTemp: state.boostTemp,
+    })
     setEditingId(p.id)
     setShowAll(true)
-  }, [handleAddProfile, state.setTemp, state.boostTemp])
+  }, [state.setTemp, state.boostTemp])
 
   const handleDelete = useCallback(
     (id: string) => {
-      handleDeleteProfile(id)
+      useProfileStore.getState().deleteProfile(id)
       setDeleteId(null)
       if (activeProfileId === id) onDeactivate()
     },
-    [handleDeleteProfile, activeProfileId, onDeactivate],
+    [activeProfileId, onDeactivate],
   )
 
   const handleSave = useCallback(
     (id: string, updates: Partial<Omit<Profile, 'id'>>) => {
-      handleUpdateProfile(id, updates)
+      useProfileStore.getState().updateProfile(id, updates)
       setEditingId(null)
     },
-    [handleUpdateProfile],
+    [],
   )
 
   const visibleProfiles = showAll ? profiles : profiles.slice(0, 3)
