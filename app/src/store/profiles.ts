@@ -34,14 +34,20 @@ const legacyCompatStorage: StateStorage = {
       if (Array.isArray(parsed)) {
         return JSON.stringify({ state: { profiles: parsed }, version: 0 })
       }
+      return raw
     } catch (e) {
-      // Don't return null here: that would silently wipe the user's profiles
-      // on the first load after a corrupt-but-non-empty value. Pass the raw
-      // string through so the persist middleware logs the parse failure and
-      // keeps the in-memory defaults instead of overwriting storage.
+      // Corrupt JSON: persist would overwrite the bad value with defaults on
+      // the next save, losing whatever it was. Stash it under a timestamped
+      // backup key so the user (or a future recovery flow) has something to
+      // work with, then let persist proceed with defaults.
       console.error(`[profiles] failed to parse '${name}' from localStorage`, e)
+      try {
+        localStorage.setItem(`${name}.corrupt-backup-${Date.now()}`, raw)
+      } catch {
+        // Quota-exceeded backups aren't worth crashing the boot for.
+      }
+      return null
     }
-    return raw
   },
   setItem: (name, value) => localStorage.setItem(name, value),
   removeItem: (name) => localStorage.removeItem(name),
@@ -60,8 +66,7 @@ export const useProfileStore = create<ProfileState>()(
         set({
           profiles: get().profiles.map((p) => (p.id === id ? { ...p, ...updates } : p)),
         }),
-      deleteProfile: (id) =>
-        set({ profiles: get().profiles.filter((p) => p.id !== id) }),
+      deleteProfile: (id) => set({ profiles: get().profiles.filter((p) => p.id !== id) }),
       resetProfiles: () => set({ profiles: defaultProfiles() }),
     }),
     {

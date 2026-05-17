@@ -1,6 +1,8 @@
 import { useMemo } from 'preact/hooks'
 import { create } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware'
+import { celsiusToFahrenheit, fahrenheitToCelsius } from '../ble/encoding'
 
 interface SettingsState {
   isCelsius: boolean
@@ -36,15 +38,18 @@ export const useSettingsStore = create<SettingsState>()(
 )
 
 export function useSettings() {
-  const isCelsius = useSettingsStore((s) => s.isCelsius)
-  const setIsCelsius = useSettingsStore((s) => s.setIsCelsius)
+  // One subscription with shallow equality instead of two independent
+  // selectors — every consumer (8 direct callers) halves its store hookup.
+  const { isCelsius, setIsCelsius } = useSettingsStore(
+    useShallow((s) => ({ isCelsius: s.isCelsius, setIsCelsius: s.setIsCelsius })),
+  )
 
   // Memoize the returned helpers so consumers using them in deps arrays or
   // passing them down as props don't see fresh function references on every
   // unrelated render.
   return useMemo(() => {
-    const cToApp = (c: number) => (isCelsius ? c : Math.round((c * 9) / 5 + 32))
-    const appToC = (v: number) => (isCelsius ? v : Math.round(((v - 32) * 5) / 9))
+    const cToApp = (c: number) => (isCelsius ? c : celsiusToFahrenheit(c))
+    const appToC = (v: number) => (isCelsius ? v : fahrenheitToCelsius(v))
     const formatTemp = (c: number) => `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
     return {
       isCelsius,

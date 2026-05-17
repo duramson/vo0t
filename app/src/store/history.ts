@@ -14,10 +14,10 @@ export async function addSession(
   readings: Array<{ t: number; temp: number }> = [],
 ): Promise<void> {
   try {
-    const sessionId = (await db.sessions.add({
+    const sessionId = await db.sessions.add({
       ...session,
       date: new Date().toISOString(),
-    })) as number
+    })
     if (readings.length > 0) {
       await db.tempReadings.bulkAdd(readings.map((r) => ({ ...r, sessionId })))
     }
