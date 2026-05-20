@@ -62,6 +62,12 @@ export function HistoryPage() {
                 <span class="material-symbols-outlined text-[14px]">timer</span>
                 {formatDuration(session.durationSeconds)}
               </span>
+              {session.truncatedAt && (
+                <span class="text-warning/80 flex items-center gap-1 text-xs">
+                  <span class="material-symbols-outlined text-[13px]">warning</span>
+                  Incomplete data (tab reloaded)
+                </span>
+              )}
             </div>
 
             <div class="bg-surface-container-high flex shrink-0 items-center justify-center rounded-full px-3 py-1.5 shadow-[0_2px_5px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.05)]">
