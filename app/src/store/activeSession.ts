@@ -5,6 +5,8 @@ interface ActiveSessionState {
   startTimestamp: number | null
   maxTemp: number
   baseOffSeconds: number
+  /** Unix ms timestamp recorded at the reload that caused a readings gap, or null. */
+  truncatedAt: number | null
   begin: (currentTemp: number, autoOffSeconds: number) => void
   recordTemp: (currentTemp: number) => void
   reset: () => void
@@ -23,12 +25,14 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
       startTimestamp: null,
       maxTemp: 0,
       baseOffSeconds: 0,
+      truncatedAt: null,
       begin: (currentTemp, autoOffSeconds) => {
         readings = [{ t: 0, temp: currentTemp }]
         set({
           startTimestamp: Date.now(),
           maxTemp: currentTemp,
           baseOffSeconds: autoOffSeconds > 0 ? autoOffSeconds : 120,
+          truncatedAt: null,
         })
       },
       recordTemp: (currentTemp) => {
@@ -45,12 +49,21 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
       },
       reset: () => {
         readings = []
-        set({ startTimestamp: null, maxTemp: 0, baseOffSeconds: 0 })
+        set({ startTimestamp: null, maxTemp: 0, baseOffSeconds: 0, truncatedAt: null })
       },
     }),
     {
       name: 'crafty-active-session',
       storage: createJSONStorage(() => sessionStorage),
+      // After rehydration, if a session was in progress but the readings buffer
+      // is empty, the tab was reloaded mid-session and the in-memory curve was
+      // lost. Record the reload time as `truncatedAt` so the saved session can
+      // be flagged as having an incomplete temperature curve.
+      onRehydrateStorage: () => (state) => {
+        if (state && state.startTimestamp !== null && readings.length === 0) {
+          state.truncatedAt = Date.now()
+        }
+      },
     },
   ),
 )

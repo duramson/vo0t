@@ -42,6 +42,7 @@ export function useSessionTracker() {
       const startTime = store.startTimestamp
       const baseOff = store.baseOffSeconds
       const maxTempAtEnd = store.maxTemp
+      const truncatedAt = store.truncatedAt ?? undefined
 
       offDebounce.current = setTimeout(() => {
         offDebounce.current = null
@@ -63,6 +64,7 @@ export function useSessionTracker() {
             {
               durationSeconds,
               maxTemp: Math.max(maxTempAtEnd, setTemp),
+              truncatedAt,
             },
             getActiveSessionReadings().slice(),
           )

@@ -6,6 +6,8 @@ export interface SessionRecord {
   durationSeconds: number
   maxTemp: number
   profileName?: string
+  /** Unix ms timestamp of the page reload that caused a readings gap, if any. */
+  truncatedAt?: number
 }
 
 export interface TempReading {
