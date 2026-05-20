@@ -61,7 +61,7 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
       // be flagged as having an incomplete temperature curve.
       onRehydrateStorage: () => (state) => {
         if (state && state.startTimestamp !== null && readings.length === 0) {
-          state.truncatedAt = Date.now()
+          state.truncatedAt = state.truncatedAt ?? Date.now()
         }
       },
     },

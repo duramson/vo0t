@@ -63,7 +63,7 @@ export function HistoryPage() {
                 {formatDuration(session.durationSeconds)}
               </span>
               {session.truncatedAt && (
-                <span class="text-text-muted flex items-center gap-1 text-xs">
+                <span class="text-warning/80 flex items-center gap-1 text-xs">
                   <span class="material-symbols-outlined text-[13px]">warning</span>
                   Incomplete data (tab reloaded)
                 </span>
