@@ -1,15 +1,14 @@
 import { useState, useCallback, useMemo } from 'preact/hooks'
 import { useCrafty } from './useCrafty'
+import { useDeviceCapabilities } from './useDeviceCapabilities'
 import { crafty } from '../ble'
 import { SUPERBOOST_OFFSET, TEMP_MAX } from '../ble/uuids'
-import { hasAdvancedFeatures } from '../ble/encoding'
 import { type Profile } from '../store/profiles'
 import { toast } from '../components/Toast'
 
 export function useMainPageLogic() {
   const { state } = useCrafty()
-  const fw = state.deviceInfo?.firmware ?? ''
-  const canHeaterControl = useMemo(() => hasAdvancedFeatures(fw), [fw])
+  const canHeaterControl = useDeviceCapabilities().supportsHeaterControl
 
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null)
   const [pendingTemp, setPendingTemp] = useState<number | null>(null)

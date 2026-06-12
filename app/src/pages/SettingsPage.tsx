@@ -5,8 +5,10 @@ import { toast } from '../components/Toast'
 import { useCrafty } from '../hooks/useCrafty'
 import { useSettings } from '../store/settings'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
+import { useDeviceCapabilities } from '../hooks/useDeviceCapabilities'
 import { crafty, type CraftyDiagnostics } from '../ble'
-import { AKKU_1, AKKU_2, SYSTEM } from '../ble/uuids'
+import { evaluateStatusRegisters } from '../ble/alerts'
+import { AKKU_1, SYSTEM } from '../ble/uuids'
 
 function SettingsCardToggle({
   icon,
@@ -64,6 +66,7 @@ function SettingsCardToggle({
 export function SettingsPage() {
   const { state, disconnect } = useCrafty()
   const isPlus = isCraftyPlus(state.deviceInfo?.firmware ?? '')
+  const caps = useDeviceCapabilities()
 
   const {
     setPendingLed,
@@ -178,15 +181,17 @@ export function SettingsPage() {
           onChange={toggleChargeLed}
         />
 
-        {/* Permanent Bluetooth */}
-        <SettingsCardToggle
-          icon="bluetooth"
-          label="Permanent BLE"
-          activeLabel="Always On"
-          inactiveLabel="Auto Sleep"
-          enabled={state.blePermanent}
-          onChange={toggleBlePermanent}
-        />
+        {/* Permanent Bluetooth (firmware ≥ V2.51) */}
+        {caps.supportsBleSettings && (
+          <SettingsCardToggle
+            icon="bluetooth"
+            label="Permanent BLE"
+            activeLabel="Always On"
+            inactiveLabel="Auto Sleep"
+            enabled={state.blePermanent}
+            onChange={toggleBlePermanent}
+          />
+        )}
       </section>
 
       {/* Sliders */}
@@ -203,19 +208,21 @@ export function SettingsPage() {
             onCommit={commitLed}
           />
         </div>
-        <div class="bg-surface-container-low space-y-4 rounded-2xl p-4 shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)]">
-          <Slider
-            label="Auto-Off Timer"
-            displayValue={`${Math.floor(displayAutoOff / 60)}m ${displayAutoOff % 60}s`}
-            value={displayAutoOff}
-            min={10}
-            max={300}
-            step={5}
-            // ticks={['10s', '2m 30s', '5m']} // Omitting ticks to match the clean design
-            onChange={setPendingAutoOff}
-            onCommit={commitAutoOff}
-          />
-        </div>
+        {caps.supportsAutoOff && (
+          <div class="bg-surface-container-low space-y-4 rounded-2xl p-4 shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+            <Slider
+              label="Auto-Off Timer"
+              displayValue={`${Math.floor(displayAutoOff / 60)}m ${displayAutoOff % 60}s`}
+              value={displayAutoOff}
+              min={10}
+              max={300}
+              step={5}
+              // ticks={['10s', '2m 30s', '5m']} // Omitting ticks to match the clean design
+              onChange={setPendingAutoOff}
+              onCommit={commitAutoOff}
+            />
+          </div>
+        )}
       </section>
 
       {/* Actions */}
@@ -228,7 +235,7 @@ export function SettingsPage() {
           <div class="h-px flex-1 bg-white/5"></div>
         </div>
 
-        {isPlus && (
+        {caps.supportsFindDevice && (
           <button
             type="button"
             onClick={() => crafty.findDevice().catch(() => toast.error('Find device failed'))}
@@ -276,28 +283,30 @@ export function SettingsPage() {
           </span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setShowFactoryReset((p) => !p)}
-          class="bg-surface-container-low group flex w-full items-center justify-between rounded-2xl p-4 shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all duration-300 hover:shadow-[0_4px_14px_rgba(244,67,54,0.3),inset_0_1px_1px_rgba(244,67,54,0.1)] active:scale-[0.98]"
-        >
-          <div class="flex items-center gap-4">
-            <div class="bg-danger/10 group-hover:bg-danger/20 flex h-10 w-10 items-center justify-center rounded-xl transition-colors">
-              <span class="material-symbols-outlined text-danger text-xl">factory</span>
+        {caps.supportsFactoryReset && (
+          <button
+            type="button"
+            onClick={() => setShowFactoryReset((p) => !p)}
+            class="bg-surface-container-low group flex w-full items-center justify-between rounded-2xl p-4 shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all duration-300 hover:shadow-[0_4px_14px_rgba(244,67,54,0.3),inset_0_1px_1px_rgba(244,67,54,0.1)] active:scale-[0.98]"
+          >
+            <div class="flex items-center gap-4">
+              <div class="bg-danger/10 group-hover:bg-danger/20 flex h-10 w-10 items-center justify-center rounded-xl transition-colors">
+                <span class="material-symbols-outlined text-danger text-xl">factory</span>
+              </div>
+              <div class="text-left">
+                <span class="font-label text-danger text-[10px] font-bold tracking-widest uppercase">
+                  Factory Reset
+                </span>
+                <p class="text-text-secondary/50 text-[10px]">Reset device settings to defaults</p>
+              </div>
             </div>
-            <div class="text-left">
-              <span class="font-label text-danger text-[10px] font-bold tracking-widest uppercase">
-                Factory Reset
-              </span>
-              <p class="text-text-secondary/50 text-[10px]">Reset device settings to defaults</p>
-            </div>
-          </div>
-          <span class="material-symbols-outlined text-text-secondary/30 group-hover:text-danger transition-colors">
-            chevron_right
-          </span>
-        </button>
+            <span class="material-symbols-outlined text-text-secondary/30 group-hover:text-danger transition-colors">
+              chevron_right
+            </span>
+          </button>
+        )}
 
-        {showFactoryReset && (
+        {caps.supportsFactoryReset && showFactoryReset && (
           <div class="bg-danger/5 space-y-3 rounded-2xl p-4 shadow-[0_4px_10px_rgba(244,67,54,0.1),inset_0_1px_1px_rgba(244,67,54,0.2)]">
             <p class="text-danger text-xs">All device settings will be reset. Are you sure?</p>
             <div class="flex gap-2">
@@ -437,14 +446,9 @@ function DiagnosticsSection({ state }: { state: ReturnType<typeof useCrafty>['st
 
 function buildWarnings(diag: CraftyDiagnostics | null): string[] {
   if (!diag) return []
-  const w: string[] = []
-  if (diag.akkuStatus1 & AKKU_1.BATTERY_LOW) w.push('Battery low – please charge')
-  if (diag.akkuStatus1 & AKKU_1.BATTERY_ERROR) w.push('Battery error – contact Storz & Bickel')
-  if (diag.akkuStatus1 & AKKU_1.TEMP_WARNING) w.push('Battery temperature warning')
-  if (diag.akkuStatus1 & AKKU_1.COOL_DOWN) w.push('Let the device cool down')
-  if (diag.akkuStatus2 & AKKU_2.CHARGER_ISSUE) w.push('Charger issue – use a different cable')
-  if (diag.systemStatus & SYSTEM.ERROR) w.push('System error – contact Storz & Bickel')
-  return w
+  return evaluateStatusRegisters(diag.akkuStatus1, diag.akkuStatus2, diag.systemStatus).map(
+    (a) => a.message,
+  )
 }
 
 function buildSections(

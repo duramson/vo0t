@@ -41,6 +41,9 @@ export type CraftyState = {
   tempReached: boolean
   settingsRaw: number
   projectRegRaw: number
+  akkuStatus1: number
+  akkuStatus2: number
+  systemStatus: number
   deviceInfo: CraftyDeviceInfo | null
 }
 
@@ -103,6 +106,9 @@ export class CraftyConnection {
       tempReached: false,
       settingsRaw: 0,
       projectRegRaw: 0,
+      akkuStatus1: 0,
+      akkuStatus2: 0,
+      systemStatus: 0,
       deviceInfo: null,
     }
   }
@@ -318,7 +324,7 @@ export class CraftyConnection {
       bleFirmware: bleFw,
     }
 
-    // Control values
+    // Control values + status registers (for connect-time error alerts)
     const [setRaw, boostRaw, battRaw, ledRaw, autoOff, autoOffCur, chg, projReg, settReg] =
       await Promise.all([
         this.readU16(UUID.SET_TEMPERATURE),
@@ -331,6 +337,11 @@ export class CraftyConnection {
         this.readU16(UUID.PROJECT_REGISTER),
         this.readU16(UUID.SETTINGS_REGISTER_2),
       ])
+    const [akku1, akku2, sysStat] = await Promise.all([
+      this.readU16(UUID.AKKU_STATUS_1),
+      this.readU16(UUID.AKKU_STATUS_2),
+      this.readU16(UUID.SYSTEM_STATUS),
+    ])
 
     // Also read current temp
     const curRaw = await this.readU16(UUID.CURRENT_TEMPERATURE)
@@ -343,6 +354,9 @@ export class CraftyConnection {
     this.state.autoOffSeconds = autoOff
     this.state.autoOffRemaining = autoOffCur
     this.state.chargingStatus = chg
+    this.state.akkuStatus1 = akku1
+    this.state.akkuStatus2 = akku2
+    this.state.systemStatus = sysStat
     this.applyProjectRegister(projReg)
     this.applySettingsRegister(settReg)
     this.notify()
