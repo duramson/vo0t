@@ -1,9 +1,11 @@
+import { useState } from 'preact/hooks'
 import { useHistory } from '../store/history'
 import { useSettings } from '../store/settings'
 
 export function HistoryPage() {
   const { history, clearHistory } = useHistory()
   const { formatTemp } = useSettings()
+  const [confirmClear, setConfirmClear] = useState(false)
 
   function formatDuration(seconds: number) {
     const mm = Math.floor(seconds / 60)
@@ -38,13 +40,40 @@ export function HistoryPage() {
       <div class="flex items-center justify-between">
         <h2 class="font-headline text-text-primary text-xl font-bold">Session History</h2>
         <button
-          onClick={clearHistory}
+          onClick={() => setConfirmClear(true)}
           class="text-accent hover:bg-accent/10 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold uppercase transition-colors"
         >
           <span class="material-symbols-outlined text-[16px]">delete</span>
           Clear
         </button>
       </div>
+
+      {confirmClear && (
+        <div class="bg-danger/5 space-y-3 rounded-2xl p-4 shadow-[0_4px_10px_rgba(244,67,54,0.1),inset_0_1px_1px_rgba(244,67,54,0.2)]">
+          <p class="text-danger text-xs">
+            Your entire session history will be permanently deleted. Are you sure?
+          </p>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                clearHistory()
+                setConfirmClear(false)
+              }}
+              class="bg-danger flex-1 rounded-xl py-2.5 text-xs font-semibold text-white"
+            >
+              Delete all
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmClear(false)}
+              class="bg-surface-container-high text-text-secondary flex-1 rounded-xl py-2.5 text-xs font-semibold"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div class="flex flex-col">
         {history.map((session, i) => (

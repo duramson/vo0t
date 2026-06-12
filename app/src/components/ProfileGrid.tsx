@@ -57,7 +57,7 @@ const CompactCard = memo(function CompactCard({
   onActivate: (p: Profile) => void
   onDeactivate: () => void
 }) {
-  const { isCelsius, unit, formatTemp } = useSettings()
+  const { unit, formatTemp, boostToApp } = useSettings()
 
   return (
     <button
@@ -91,7 +91,7 @@ const CompactCard = memo(function CompactCard({
               Boost
             </span>
             <span class={`text-[13px] font-bold ${active ? 'text-accent' : ''}`}>
-              +{isCelsius ? p.boostTemp : Math.round((p.boostTemp * 9) / 5)}
+              +{boostToApp(p.boostTemp)}
               {unit}
             </span>
           </div>
@@ -116,15 +116,11 @@ const ExpandedCard = memo(function ExpandedCard({
   onEdit: (id: string) => void
   onDelete: (id: string) => void
 }) {
-  const { formatTemp, isCelsius, unit } = useSettings()
-
-  // Note: For boost we show it as a relative step.
-  // 10°C boost = 18°F boost.
-  const displayBoost = isCelsius ? p.boostTemp : Math.round((p.boostTemp * 9) / 5)
+  const { formatTemp, unit, boostToApp } = useSettings()
 
   const stats = [
     ['Temp', formatTemp(p.setTemp)],
-    ['Boost', `+${displayBoost}${unit}`],
+    ['Boost', `+${boostToApp(p.boostTemp)}${unit}`],
   ] as const
 
   return (
@@ -200,13 +196,10 @@ export function ProfileGrid({ activeProfileId, onActivate, onDeactivate }: Profi
     [activeProfileId, onDeactivate],
   )
 
-  const handleSave = useCallback(
-    (id: string, updates: Partial<Omit<Profile, 'id'>>) => {
-      useProfileStore.getState().updateProfile(id, updates)
-      setEditingId(null)
-    },
-    [],
-  )
+  const handleSave = useCallback((id: string, updates: Partial<Omit<Profile, 'id'>>) => {
+    useProfileStore.getState().updateProfile(id, updates)
+    setEditingId(null)
+  }, [])
 
   const visibleProfiles = showAll ? profiles : profiles.slice(0, 3)
 

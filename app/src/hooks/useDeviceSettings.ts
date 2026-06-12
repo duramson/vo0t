@@ -1,12 +1,10 @@
 import { useState, useCallback } from 'preact/hooks'
-import { crafty, type CraftyState, type CraftyDiagnostics } from '../ble'
+import { crafty, type CraftyState } from '../ble'
 import { toast } from '../components/Toast'
 
 export function useDeviceSettings(state: CraftyState) {
   const [pendingLed, setPendingLed] = useState<number | null>(null)
   const [pendingAutoOff, setPendingAutoOff] = useState<number | null>(null)
-  const [diagnostics, setDiagnostics] = useState<CraftyDiagnostics | null>(null)
-  const [isLoadingDiag, setIsLoadingDiag] = useState(false)
 
   const displayLed = pendingLed ?? state.ledBrightness
   const displayAutoOff = pendingAutoOff ?? state.autoOffSeconds
@@ -64,24 +62,10 @@ export function useDeviceSettings(state: CraftyState) {
     }
   }, [])
 
-  const loadDiagnostics = useCallback(async () => {
-    setIsLoadingDiag(true)
-    try {
-      const diag = await crafty.readDiagnostics()
-      setDiagnostics(diag)
-    } catch {
-      toast.error('Failed to read diagnostics')
-    } finally {
-      setIsLoadingDiag(false)
-    }
-  }, [])
-
   return {
-    pendingLed,
     setPendingLed,
     displayLed,
     commitLed,
-    pendingAutoOff,
     setPendingAutoOff,
     displayAutoOff,
     commitAutoOff,
@@ -89,8 +73,5 @@ export function useDeviceSettings(state: CraftyState) {
     toggleChargeLed,
     toggleBlePermanent,
     triggerFactoryReset,
-    diagnostics,
-    loadDiagnostics,
-    isLoadingDiag,
   }
 }

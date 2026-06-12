@@ -1,15 +1,15 @@
 import { useState, useCallback, useMemo } from 'preact/hooks'
 import { useCrafty } from './useCrafty'
 import { crafty } from '../ble'
-import { SUPERBOOST_OFFSET } from '../ble/uuids'
-import { isCraftyPlus, hasAdvancedFeatures } from '../ble/encoding'
+import { SUPERBOOST_OFFSET, TEMP_MAX } from '../ble/uuids'
+import { hasAdvancedFeatures } from '../ble/encoding'
 import { type Profile } from '../store/profiles'
 import { toast } from '../components/Toast'
 
 export function useMainPageLogic() {
   const { state } = useCrafty()
   const fw = state.deviceInfo?.firmware ?? ''
-  const canHeaterControl = useMemo(() => isCraftyPlus(fw) || hasAdvancedFeatures(fw), [fw])
+  const canHeaterControl = useMemo(() => hasAdvancedFeatures(fw), [fw])
 
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null)
   const [pendingTemp, setPendingTemp] = useState<number | null>(null)
@@ -19,11 +19,11 @@ export function useMainPageLogic() {
   const displayBoost = pendingBoost ?? state.boostTemp
 
   const boostTemp1 = useMemo(
-    () => Math.min(displaySetTemp + displayBoost, 210),
+    () => Math.min(displaySetTemp + displayBoost, TEMP_MAX),
     [displaySetTemp, displayBoost],
   )
   const boostTemp2 = useMemo(
-    () => Math.min(displaySetTemp + displayBoost + SUPERBOOST_OFFSET, 210),
+    () => Math.min(displaySetTemp + displayBoost + SUPERBOOST_OFFSET, TEMP_MAX),
     [displaySetTemp, displayBoost],
   )
 
@@ -64,8 +64,16 @@ export function useMainPageLogic() {
 
   const handleActivateProfile = useCallback(async (profile: Profile) => {
     try {
-      await crafty.setTemperature(profile.setTemp)
-      await crafty.setBoostTemperature(profile.boostTemp)
+      // Both writes clamp against the combined cap (setTemp + boost ≤ TEMP_MAX)
+      // using the *current* device state. Write the value that moves downward
+      // first, so the cap never clips the profile's other value.
+      if (profile.setTemp <= crafty.state.setTemp) {
+        await crafty.setTemperature(profile.setTemp)
+        await crafty.setBoostTemperature(profile.boostTemp)
+      } else {
+        await crafty.setBoostTemperature(profile.boostTemp)
+        await crafty.setTemperature(profile.setTemp)
+      }
       setActiveProfile(profile)
     } catch (e) {
       toast.error('Failed to apply profile')

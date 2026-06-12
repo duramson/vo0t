@@ -17,7 +17,11 @@ export function getVirtualState(): VirtualCraftyState | null {
  * CraftyConnection can use this transparently in place of a real device.
  */
 export function createVirtualDevice(): MockDevice {
+  // A reconnect creates a fresh engine — stop the previous one so its
+  // setInterval doesn't keep ticking forever.
+  virtualState?.stop()
   virtualState = new VirtualCraftyState()
+  const vs = virtualState
   const chars = virtualState.getCharacteristics()
 
   // Group characteristics by service UUID
@@ -61,9 +65,10 @@ export function createVirtualDevice(): MockDevice {
   services.set(UUID.SERVICE_3, new MockGATTService(s3Chars))
 
   const device = new MockDevice(services)
+  device.addEventListener('gattserverdisconnected', () => vs.stop())
 
   // Start the simulation engine
-  virtualState.start()
+  vs.start()
 
   return device
 }

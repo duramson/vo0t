@@ -23,7 +23,7 @@ export function MainPage() {
     toggleHeater,
   } = useMainPageLogic()
 
-  const { isCelsius, unit, cToApp } = useSettings()
+  const { isCelsius, unit, cToApp, boostToApp } = useSettings()
 
   return (
     <main class="pb-page-bottom flex flex-col gap-(--spacing-section) px-(--spacing-page) pt-2">
@@ -122,7 +122,7 @@ export function MainPage() {
         <div class="bg-surface-container-low rounded-[20px] p-3 shadow-[0_4px_10px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)]">
           <Slider
             label="Boost Level"
-            displayValue={`+${isCelsius ? displayBoost : Math.round((displayBoost * 9) / 5)}${unit}`}
+            displayValue={`+${boostToApp(displayBoost)}${unit}`}
             value={displayBoost}
             min={0}
             max={15}
