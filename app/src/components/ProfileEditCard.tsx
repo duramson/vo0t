@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks'
 import type { Profile } from '../store/profiles'
 import { useSettings } from '../store/settings'
+import { TEMP_MIN, TEMP_MAX, BOOST_MAX } from '../ble/uuids'
 
 interface ProfileEditCardProps {
   profile: Profile
@@ -8,27 +9,32 @@ interface ProfileEditCardProps {
   onCancel: () => void
 }
 
+// Number inputs accept anything ("", "1e9", out-of-range typing); clamp before
+// persisting so a profile never stores NaN or impossible temperatures.
+const clamp = (v: number, lo: number, hi: number) =>
+  Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : lo
+
 export function ProfileEditCard({ profile: p, onSave, onCancel }: ProfileEditCardProps) {
   const [name, setName] = useState(p.name)
   const [temp, setTemp] = useState(p.setTemp)
   const [boost, setBoost] = useState(p.boostTemp)
 
-  const { isCelsius, unit, cToApp, appToC } = useSettings()
+  const { unit, cToApp, appToC, boostToApp, appToBoost } = useSettings()
 
   const fields = [
     {
       label: `Temp ${unit}`,
       value: cToApp(temp),
       set: (v: number) => setTemp(appToC(v)),
-      min: cToApp(40),
-      max: cToApp(210),
+      min: cToApp(TEMP_MIN),
+      max: cToApp(TEMP_MAX),
     },
     {
       label: `Boost ${unit}`,
-      value: isCelsius ? boost : Math.round((boost * 9) / 5),
-      set: (v: number) => setBoost(isCelsius ? v : Math.round((v * 5) / 9)),
+      value: boostToApp(boost),
+      set: (v: number) => setBoost(appToBoost(v)),
       min: 0,
-      max: isCelsius ? 15 : Math.round((15 * 9) / 5),
+      max: boostToApp(BOOST_MAX),
     },
   ]
 
@@ -69,13 +75,15 @@ export function ProfileEditCard({ profile: p, onSave, onCancel }: ProfileEditCar
         </div>
         <button
           type="button"
-          onClick={() =>
+          onClick={() => {
+            const safeTemp = clamp(temp, TEMP_MIN, TEMP_MAX)
             onSave({
               name: name.trim() || p.name,
-              setTemp: temp,
-              boostTemp: boost,
+              setTemp: safeTemp,
+              // Respect the device's combined cap (setTemp + boost ≤ TEMP_MAX)
+              boostTemp: clamp(boost, 0, Math.min(BOOST_MAX, TEMP_MAX - safeTemp)),
             })
-          }
+          }}
           class="bg-accent hover:bg-accent-hover w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-colors"
         >
           Save

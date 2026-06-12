@@ -79,6 +79,7 @@ export class CraftyConnection {
   private chars: Map<string, BluetoothRemoteGATTCharacteristic> = new Map()
   private listeners: Set<Listener> = new Set()
   private cleanupFunctions: Array<() => void> = []
+  private connecting = false
 
   state: CraftyState = this.defaultState()
 
@@ -120,6 +121,22 @@ export class CraftyConnection {
   // ── Connection ─────────────────────────────────────────
 
   async connect(): Promise<void> {
+    if (this.connecting || this.state.connected) return
+    this.connecting = true
+    try {
+      await this.doConnect()
+    } catch (err) {
+      // A failure mid-connect (service discovery, initial reads, …) must not
+      // leave a half-open connection: release listeners, drop the GATT link
+      // and reset state so the next attempt starts clean.
+      this.teardown()
+      throw err
+    } finally {
+      this.connecting = false
+    }
+  }
+
+  private async doConnect(): Promise<void> {
     if (import.meta.env.VITE_DEV_SIMULATION === 'true') {
       const { createVirtualDevice } = await import('./simulator')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -236,8 +253,19 @@ export class CraftyConnection {
   }
 
   private onDisconnect = (): void => {
+    this.teardown()
+  }
+
+  /** Release listeners, drop the GATT link and reset state. Safe to call on a half-open connection. */
+  private teardown(): void {
     this.cleanupFunctions.forEach((cleanup) => cleanup())
     this.cleanupFunctions = []
+
+    // No-op when called from onDisconnect (link already gone); the
+    // gattserverdisconnected listener was removed above, so no re-entry.
+    if (this.device?.gatt?.connected) {
+      this.device.gatt.disconnect()
+    }
 
     this.state = { ...this.defaultState(), deviceInfo: this.state.deviceInfo }
     this.chars.clear()

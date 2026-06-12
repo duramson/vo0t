@@ -51,11 +51,17 @@ export function useSettings() {
     const cToApp = (c: number) => (isCelsius ? c : celsiusToFahrenheit(c))
     const appToC = (v: number) => (isCelsius ? v : fahrenheitToCelsius(v))
     const formatTemp = (c: number) => `${cToApp(c)}°${isCelsius ? 'C' : 'F'}`
+    // Boost is a relative offset, so it scales without the +32 shift
+    // (10 °C boost = 18 °F boost).
+    const boostToApp = (c: number) => (isCelsius ? c : Math.round(c * 1.8))
+    const appToBoost = (v: number) => (isCelsius ? v : Math.round(v / 1.8))
     return {
       isCelsius,
       setIsCelsius,
       cToApp,
       appToC,
+      boostToApp,
+      appToBoost,
       formatTemp,
       unit: isCelsius ? '°C' : '°F',
     }

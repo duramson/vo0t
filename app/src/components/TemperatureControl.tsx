@@ -300,11 +300,12 @@ export const TemperatureControl = memo(function TemperatureControl({
   const move = useCallback(
     (clientX: number, clientY: number) => {
       let angle = getAngle(clientX, clientY)
-      // Prevent jumping in the "dead zone" at the bottom (between 135 and 225 / -135 degrees)
-      if (angle > 135 && angle < 180) {
-        angle = 135
-      } else if (angle < -135 || angle > 180) {
-        angle = -135
+      // Snap the bottom "dead zone" (beyond ±135°) to the nearest arc end so
+      // the value can't jump between min and max while dragging through it.
+      if (angle > ARC_END) {
+        angle = ARC_END
+      } else if (angle < ARC_START) {
+        angle = ARC_START
       }
       const val = angleToVal(angle, min, max)
       // Haptic feedback on whole integer change

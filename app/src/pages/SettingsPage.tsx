@@ -289,7 +289,7 @@ export function SettingsPage() {
               <span class="font-label text-danger text-[10px] font-bold tracking-widest uppercase">
                 Factory Reset
               </span>
-              <p class="text-text-secondary/50 text-[10px]">Wipe all local user data & presets</p>
+              <p class="text-text-secondary/50 text-[10px]">Reset device settings to defaults</p>
             </div>
           </div>
           <span class="material-symbols-outlined text-text-secondary/30 group-hover:text-danger transition-colors">
