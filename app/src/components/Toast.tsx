@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback } from 'preact/hooks'
 
-type ToastType = 'error' | 'success' | 'info'
+type ToastType = 'error' | 'success' | 'info' | 'warning'
 type ToastItem = { id: number; message: string; type: ToastType }
 
 let nextId = 0
@@ -30,6 +30,7 @@ export const toast = {
   error: (msg: string) => add(msg, 'error'),
   success: (msg: string) => add(msg, 'success'),
   info: (msg: string) => add(msg, 'info'),
+  warning: (msg: string) => add(msg, 'warning', 6000),
 }
 
 export function ToastContainer() {
@@ -59,7 +60,9 @@ export function ToastContainer() {
               ? 'bg-danger text-white'
               : t.type === 'success'
                 ? 'bg-success text-white'
-                : 'bg-info text-white'
+                : t.type === 'warning'
+                  ? 'bg-warning text-black'
+                  : 'bg-info text-white'
           }`}
           onClick={() => dismiss(t.id)}
         >
